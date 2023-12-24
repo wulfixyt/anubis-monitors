@@ -3,11 +3,15 @@ module github.com/wulfixyt/anubis-monitors
 go 1.18
 
 require (
-	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/antchfx/htmlquery v1.2.5 // indirect
+	github.com/andybalholm/brotli v1.0.4
+	github.com/antchfx/htmlquery v1.2.5
+	github.com/bogdanfinn/fhttp v0.5.24
+	github.com/bogdanfinn/tls-client v1.6.1
+	github.com/google/uuid v1.3.0
+)
+
+require (
 	github.com/antchfx/xpath v1.2.1 // indirect
-	github.com/bogdanfinn/fhttp v0.5.24 // indirect
-	github.com/bogdanfinn/tls-client v1.6.1 // indirect
 	github.com/bogdanfinn/utls v1.5.16 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect

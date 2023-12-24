@@ -23,7 +23,7 @@ func Init() {
 }
 
 func Format(task *structs.Task, text string, colour string) string {
-	return fmt.Sprintf("- [%s][%s] - %s", task.Uuid, task.Site, text)
+	return fmt.Sprintf("- [%s][%s] - %s", task.Id, task.Site, text)
 }
 
 // Example to show how to use

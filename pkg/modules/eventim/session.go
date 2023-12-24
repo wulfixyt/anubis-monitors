@@ -3,14 +3,16 @@ package eventim
 import (
 	"client/cookiejar"
 	"fmt"
+	"github.com/wulfixyt/anubis-monitors/pkg/akamai"
+	"github.com/wulfixyt/anubis-monitors/pkg/log"
 	"math/rand"
 	"strings"
 	"time"
 
 	"github.com/antchfx/htmlquery"
 	http "github.com/bogdanfinn/fhttp"
-	"github.com/wulfixyt/anubis-monitors/pkg/sites/utils"
 	"github.com/wulfixyt/anubis-monitors/pkg/tasks/structs"
+	"github.com/wulfixyt/anubis-monitors/pkg/utils"
 )
 
 func session(task *structs.Task) bool {
@@ -39,7 +41,7 @@ func session(task *structs.Task) bool {
 
 	res, err := task.Client.Do(req)
 	if err != nil {
-		go utils.TaskLog(task, "Session Error - Proxy Error", "red")
+		go log.InfoLogger.Println(log.Format(task, "Session Error - Proxy Error", "red"))
 
 		time.Sleep(time.Duration(task.Delay) * time.Millisecond)
 
@@ -57,14 +59,14 @@ func session(task *structs.Task) bool {
 		doc, _ := htmlquery.Parse(strings.NewReader(body))
 		scripts, err := htmlquery.QueryAll(doc, "//script[@type='text/javascript']")
 		if err != nil {
-			go utils.TaskLog(task, "Session Error - Failed to parse Response", "red")
+			go log.InfoLogger.Println(log.Format(task, "Session Error - Failed to parse Response", "red"))
 
 			time.Sleep(time.Duration(task.Delay) * time.Millisecond)
 			return false
 		}
 
 		if len(scripts) == 0 {
-			go utils.TaskLog(task, "Session Error - Response Error", "red")
+			go log.InfoLogger.Println(log.Format(task, "Session Error - Response Error", "red"))
 
 			utils.ChangeRoundtripper(task, task.Client)
 
@@ -85,7 +87,7 @@ func session(task *structs.Task) bool {
 		time.Sleep(4 * time.Second)
 		return true
 	} else if res.StatusCode == 403 {
-		go utils.TaskLog(task, "Session Error - (403)", "red")
+		go log.InfoLogger.Println(log.Format(task, "Session Error - (403)", "red"))
 
 		time.Sleep(5 * time.Second)
 
@@ -94,24 +96,24 @@ func session(task *structs.Task) bool {
 
 		utils.ChangeRoundtripper(task, task.Client)
 	} else if res.StatusCode == 429 {
-		go utils.TaskLog(task, "Session Error - Rate Limit", "red")
+		go log.InfoLogger.Println(log.Format(task, "Session Error - Rate Limit", "red"))
 
 		utils.ChangeRoundtripper(task, task.Client)
 	} else if res.StatusCode == 503 {
-		go utils.TaskLog(task, "Detected Queue", "magenta")
+		go log.InfoLogger.Println(log.Format(task, "Detected Queue", "magenta"))
 
 		time.Sleep(30 * time.Second)
 		return false
 	} else {
 		body, _, _ := utils.ParseResponse(res)
 		if strings.Contains(body, "Waiting Room page") {
-			go utils.TaskLog(task, "Detected Queue", "magenta")
+			go log.InfoLogger.Println(log.Format(task, "Detected Queue", "magenta"))
 
 			time.Sleep(30 * time.Second)
 			return false
 		}
 
-		go utils.TaskLog(task, fmt.Sprintf("Session Error - (%d)", res.StatusCode), "red")
+		go log.InfoLogger.Println(log.Format(task, fmt.Sprintf("Session Error - (%d)", res.StatusCode), "red"))
 	}
 
 	time.Sleep(time.Duration(task.Delay) * time.Millisecond)
@@ -143,7 +145,7 @@ func getAkamai(task *structs.Task, referer string) string {
 
 	resp, err := task.Client.Do(req)
 	if err != nil {
-		go utils.TaskLog(task, "Akamai Error - Proxy Error", "red")
+		go log.InfoLogger.Println(log.Format(task, "Akamai Error - Proxy Error", "red"))
 
 		utils.ChangeRoundtripper(task, task.Client)
 		time.Sleep(time.Duration(task.Delay) * time.Millisecond)
@@ -154,16 +156,16 @@ func getAkamai(task *structs.Task, referer string) string {
 
 	_, body, _ := utils.ParseResponse(resp)
 
-	return utils.GetConfig(task, body)
+	return akamai.GetConfig(task, body)
 }
 
 func solveAkamai(task *structs.Task, amount int, config string, minSleep int, maxSleep int, referer string, mouseEvents bool, keyboardEvents bool) {
 	for i := 0; i < amount; i++ {
 		time.Sleep(time.Duration(rand.Intn(maxSleep)+minSleep) * time.Millisecond)
 
-		sensorData := utils.GetSensor(task, referer, utils.GetValue(task, "_abck", task.EventimVariables.Authority), utils.GetValue(task, "bm_sz", task.EventimVariables.Authority), task.EventimVariables.UserAgent.Web, config, mouseEvents, keyboardEvents)
+		sensorData := akamai.GetSensor(task, referer, utils.GetValue(task, "_abck", task.EventimVariables.Authority), utils.GetValue(task, "bm_sz", task.EventimVariables.Authority), task.EventimVariables.UserAgent.Web, config, mouseEvents, keyboardEvents)
 		if len(sensorData) < 200 {
-			sensorData = utils.GetSensor(task, referer, utils.GetValue(task, "_abck", task.EventimVariables.Authority), utils.GetValue(task, "bm_sz", task.EventimVariables.Authority), task.EventimVariables.UserAgent.Web, config, mouseEvents, keyboardEvents)
+			sensorData = akamai.GetSensor(task, referer, utils.GetValue(task, "_abck", task.EventimVariables.Authority), utils.GetValue(task, "bm_sz", task.EventimVariables.Authority), task.EventimVariables.UserAgent.Web, config, mouseEvents, keyboardEvents)
 		}
 
 		req, _ := http.NewRequest("POST", task.EventimVariables.AkamaiUrl, strings.NewReader(fmt.Sprintf(`{"sensor_data":"%s"}`, sensorData)))
