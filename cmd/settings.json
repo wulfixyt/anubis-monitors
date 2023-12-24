@@ -1,0 +1,11 @@
+{
+  "config": {
+    "webhook": "",
+    "publicWebhook": "",
+    "delays": {
+      "eventim": 10000,
+      "fansale": 1500,
+      "ticketmaster": 10000
+    }
+  }
+}
