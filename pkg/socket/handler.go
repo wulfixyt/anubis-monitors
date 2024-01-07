@@ -34,6 +34,151 @@ func Connect() {
 		return
 	}
 
+	// DE
+
+	task := &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.de",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.de"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	// AT
+
+	task = &structs.Task{
+		Site:      "www.fansale.at",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.at"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.at",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.at"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.at",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.at"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	// CH
+
+	task = &structs.Task{
+		Site:      "www.fansale.ch",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.ch"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.ch",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.ch"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.ch",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.ch"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	for {
+		time.Sleep(100 * time.Second)
+	}
+
 	for {
 		// Check for what monitors should be active
 		err = getMonitors()

@@ -25,10 +25,13 @@ type fansaleUtils struct {
 	AkamaiUrl    string
 	AkamaiConfig string
 	EventId      string
+	EventCounter int
+	LastCounter  int
 	Referer      string
 	RetryCounter int
 	Tickets      []string
 	UserAgent    string
+	Keywords     []string
 }
 
 type ticketmasterUtils struct {

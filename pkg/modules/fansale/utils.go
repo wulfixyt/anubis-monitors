@@ -13,6 +13,18 @@ import (
 	"github.com/wulfixyt/anubis-monitors/pkg/utils"
 )
 
+func checkExpiry(id int) bool {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if _, ok := webhookHandler[id]; !ok {
+		webhookHandler[id] = true
+		return true
+	}
+
+	return false
+}
+
 func getAkamai(task *structs.Task, referer string) string {
 	req, _ := http.NewRequest("GET", task.FansaleVariables.AkamaiUrl, nil)
 

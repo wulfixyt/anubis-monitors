@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/antchfx/htmlquery"
@@ -19,6 +20,11 @@ import (
 	"github.com/wulfixyt/anubis-monitors/pkg/notification"
 	"github.com/wulfixyt/anubis-monitors/pkg/tasks/structs"
 	"github.com/wulfixyt/anubis-monitors/pkg/utils"
+)
+
+var (
+	webhookHandler = make(map[int]bool)
+	mutex          sync.Mutex
 )
 
 func Run(task *structs.Task) {
@@ -43,68 +49,88 @@ func Run(task *structs.Task) {
 
 	task.Client = &http.Client{
 		Transport: rt,
-		Jar:       task.Jar,
-		Timeout:   20 * time.Second,
+		//Jar:       task.Jar,
+		Timeout: 20 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
 	}
 
 	generateInfo(task)
 
 	go log.InfoLogger.Println(log.Format(task, "Generating Session", "white"))
 
-	if task.Type == "Akamai" {
-		for !session(task) {
-			select {
-			case <-task.Ctx.Done():
-				return
-			default:
+	// CHANGE
+	task.FansaleVariables.EventCounter = 7478157
+	task.FansaleVariables.LastCounter = 7478157
+	task.FansaleVariables.Keywords = []string{"17348408", "17348446", "17348350", "17318939", "17333071", "17337297", "17337788", "17335909"}
 
-				continue
-			}
+	for {
+		for task.FansaleVariables.LastCounter+10 >= task.FansaleVariables.EventCounter {
+			go log.InfoLogger.Println(log.Format(task, fmt.Sprintf("Checking %d", task.FansaleVariables.EventCounter), "white"))
+
+			findOffers(task)
 		}
 
-		var counter int
-
-		for {
-			select {
-			case <-task.Ctx.Done():
-				return
-			default:
-				counter += 1
-
-				getOffers(task)
-
-				if counter%3 == 0 {
-					// Submitting SensorData
-					solveAkamai(task, rand.Intn(2)+2, task.FansaleVariables.AkamaiConfig, 300, 1300, task.FansaleVariables.Referer, true, false)
-					time.Sleep(4 * time.Second)
-				}
-
-				continue
-			}
-		}
-	} else if task.Type == "Seatmap" {
-		for {
-			select {
-			case <-task.Ctx.Done():
-				return
-			default:
-				seatmap(task)
-
-				continue
-			}
-		}
-	} else {
-		for {
-			select {
-			case <-task.Ctx.Done():
-				return
-			default:
-				detailSearch(task)
-
-				continue
-			}
-		}
+		task.FansaleVariables.EventCounter = task.FansaleVariables.LastCounter + 1
 	}
+
+	/*
+		if task.Type == "Akamai" {
+			for !session(task) {
+				select {
+				case <-task.Ctx.Done():
+					return
+				default:
+
+					continue
+				}
+			}
+
+			var counter int
+
+			for {
+				select {
+				case <-task.Ctx.Done():
+					return
+				default:
+					counter += 1
+
+					getOffers(task)
+
+					if counter%3 == 0 {
+						// Submitting SensorData
+						solveAkamai(task, rand.Intn(2)+2, task.FansaleVariables.AkamaiConfig, 300, 1300, task.FansaleVariables.Referer, true, false)
+						time.Sleep(4 * time.Second)
+					}
+
+					continue
+				}
+			}
+		} else if task.Type == "Seatmap" {
+			for {
+				select {
+				case <-task.Ctx.Done():
+					return
+				default:
+					seatmap(task)
+
+					continue
+				}
+			}
+		} else {
+			for {
+				select {
+				case <-task.Ctx.Done():
+					return
+				default:
+					detailSearch(task)
+
+					continue
+				}
+			}
+		}
+	*/
 }
 
 func generateInfo(task *structs.Task) {
@@ -128,7 +154,7 @@ func generateInfo(task *structs.Task) {
 		task.FansaleVariables.AffiliateId = "FAN"
 	}
 
-	task.Site = "Fansale"
+	task.Site = task.FansaleVariables.Authority
 
 	task.FansaleVariables.EventId = strings.ReplaceAll(task.Input, " ", "")
 	// Convert url to eventId
@@ -139,6 +165,100 @@ func generateInfo(task *structs.Task) {
 	}
 
 	task.Event.Url = fmt.Sprintf("https://%s/fansale/searchresult/event/%s", task.FansaleVariables.Authority, task.FansaleVariables.EventId)
+}
+
+func findOffers(task *structs.Task) bool {
+	req, _ := http.NewRequest("GET", fmt.Sprintf("https://%s/fansale/taylor-swift-the-eras-tour-tickets-%d.htm?bm-verify=1&affiliate=%s&_=%d", task.FansaleVariables.Authority, task.FansaleVariables.EventCounter, task.FansaleVariables.AffiliateId, time.Now().UnixMilli()), nil)
+
+	req.Header = http.Header{
+		"Connection":                {"keep-alive"},
+		"Cache-Control":             {"no-cache"},
+		"Pragma":                    {"no-cache"},
+		"sec-ch-ua":                 {utils.GetSecChUa(task.FansaleVariables.UserAgent)},
+		"sec-ch-ua-mobile":          {"?0"},
+		"sec-ch-ua-platform":        {`"Windows"`},
+		"Upgrade-Insecure-Requests": {"1"},
+		"User-Agent":                {task.FansaleVariables.UserAgent},
+		"Accept":                    {"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"},
+		"Sec-Fetch-Site":            {"none"},
+		"Sec-Fetch-Mode":            {"navigate"},
+		"Sec-Fetch-User":            {"?1"},
+		"Sec-Fetch-Dest":            {"document"},
+		"Accept-Encoding":           {"gzip, deflate, br"},
+		"Accept-Language":           {"en-US,en;q=0.9"},
+		http.HeaderOrderKey: {
+			"host", "connection", "cache-control", "pragma", "sec-ch-ua", "sec-ch-ua-mobile", "sec-ch-ua-platform", "upgrade-insecure-requests", "user-agent", "accept", "sec-fetch-site", "sec-fetch-mode", "sec-fetch-user", "sec-fetch-dest", "accept-encoding", "accept-language",
+		},
+		http.PHeaderOrderKey: {
+			":method", ":authority", ":scheme", ":path",
+		},
+	}
+
+	res, err := task.Client.Do(req)
+	if err != nil {
+		go log.ErrorLogger.Println(log.Format(task, "Proxy Error", "red"))
+		time.Sleep(time.Duration(task.Delay) * time.Millisecond)
+		utils.ChangeRoundtripper(task, task.Client)
+		return false
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode == 200 {
+		body, _, _ := utils.ParseResponse(res)
+
+		for _, kw := range task.FansaleVariables.Keywords {
+			if strings.Contains(body, kw) {
+				// Check if there is an entry
+				if checkExpiry(task.FansaleVariables.EventCounter) {
+					go log.InfoLogger.Println(log.Format(task, "Detected Restock", "white"))
+
+					notification.SendDiscord(task.Site+"_New", kw, fmt.Sprintf("https://%s/fansale/taylor-swift-the-eras-tour-tickets-%d.htm?affiliate=%s", task.FansaleVariables.Authority, task.FansaleVariables.EventCounter, task.FansaleVariables.AffiliateId), "")
+				}
+
+				break
+			}
+		}
+
+		task.FansaleVariables.LastCounter = task.FansaleVariables.EventCounter
+		task.FansaleVariables.EventCounter += 1
+
+		time.Sleep(time.Duration(task.Delay) * time.Millisecond)
+		return false
+	} else if res.StatusCode == 400 {
+		go log.InfoLogger.Println(log.Format(task, "Waiting for new Offer", "white"))
+	} else if res.StatusCode == 403 {
+		if res.ContentLength == 0 {
+			go log.InfoLogger.Println(log.Format(task, "Waiting for Offer", "white"))
+
+			task.FansaleVariables.EventCounter += 1
+		} else {
+			go log.ErrorLogger.Println(log.Format(task, "Monitor Error - (403)", "red"))
+
+			time.Sleep(time.Second)
+
+			//task.Jar, _ = cookiejar.New(nil)
+			//task.Client.Jar = task.Jar
+
+			utils.ChangeRoundtripper(task, task.Client)
+		}
+	} else if res.StatusCode == 429 {
+		go log.ErrorLogger.Println(log.Format(task, "Monitor Error - Rate Limit", "red"))
+
+		utils.ChangeRoundtripper(task, task.Client)
+	} else if res.StatusCode == 503 {
+		go log.InfoLogger.Println(log.Format(task, "Detected Queue", "magenta"))
+
+		time.Sleep(30 * time.Second)
+		return false
+	} else {
+		go log.ErrorLogger.Println(log.Format(task, fmt.Sprintf("Monitor Error - (%d)", res.StatusCode), "red"))
+
+		task.FansaleVariables.EventCounter += 1
+	}
+
+	time.Sleep(time.Duration(task.Delay) * time.Millisecond)
+	return false
 }
 
 func getOffers(task *structs.Task) bool {
