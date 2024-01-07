@@ -25,6 +25,24 @@ func checkExpiry(id int) bool {
 	return false
 }
 
+func addEntry(id int) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	webhookArray = append(webhookArray, id)
+}
+
+func lastEntry() int {
+	mutex.RLock()
+	defer mutex.RUnlock()
+
+	if len(webhookArray) == 0 {
+		return 0
+	}
+
+	return webhookArray[len(webhookArray)-1]
+}
+
 func getAkamai(task *structs.Task, referer string) string {
 	req, _ := http.NewRequest("GET", task.FansaleVariables.AkamaiUrl, nil)
 

@@ -24,7 +24,8 @@ import (
 
 var (
 	webhookHandler = make(map[int]bool)
-	mutex          sync.Mutex
+	webhookArray   = []int{}
+	mutex          sync.RWMutex
 )
 
 func Run(task *structs.Task) {
@@ -61,15 +62,39 @@ func Run(task *structs.Task) {
 	go log.InfoLogger.Println(log.Format(task, "Generating Session", "white"))
 
 	// CHANGE
-	task.FansaleVariables.EventCounter = 7478157
-	task.FansaleVariables.LastCounter = 7478157
-	task.FansaleVariables.Keywords = []string{"17348408", "17348446", "17348350", "17318939", "17333071", "17337297", "17337788", "17335909"}
+	task.FansaleVariables.EventCounter = 7478289
+	task.FansaleVariables.LastCounter = 7478289
+	task.FansaleVariables.Keywords = []string{
+		// DE keywords
+		"17348408",
+		"17348446",
+		"17348350",
+		"17318939",
+		"17333071",
+		"17337297",
+		"17337788",
+		"17335909",
+
+		// CH keywords
+		"17337756",
+		"17244455",
+
+		// AT keywords
+		"17275983",
+		"17337851",
+		"17337852",
+	}
 
 	for {
-		for task.FansaleVariables.LastCounter+10 >= task.FansaleVariables.EventCounter {
+		for task.FansaleVariables.LastCounter+5 >= task.FansaleVariables.EventCounter {
 			go log.InfoLogger.Println(log.Format(task, fmt.Sprintf("Checking %d", task.FansaleVariables.EventCounter), "white"))
 
 			findOffers(task)
+		}
+
+		value := lastEntry()
+		if value > 0 {
+			task.FansaleVariables.LastCounter = value
 		}
 
 		task.FansaleVariables.EventCounter = task.FansaleVariables.LastCounter + 1
@@ -149,6 +174,21 @@ func generateInfo(task *structs.Task) {
 	case "www.fansale.at":
 		task.FansaleVariables.Authority = "www.fansale.at"
 		task.FansaleVariables.AffiliateId = "FAU"
+	case "www.fansale.pl":
+		task.FansaleVariables.Authority = "www.fansale.pl"
+		task.FansaleVariables.AffiliateId = "FPL"
+	case "www.fansale.es":
+		task.FansaleVariables.Authority = "www.fansale.es"
+		task.FansaleVariables.AffiliateId = "FES"
+	case "www.fansale.se":
+		task.FansaleVariables.Authority = "www.fansale.se"
+		task.FansaleVariables.AffiliateId = "FSE"
+	case "www.fansale.no":
+		task.FansaleVariables.Authority = "www.fansale.no"
+		task.FansaleVariables.AffiliateId = "FNO"
+	case "www.fansale.fi":
+		task.FansaleVariables.Authority = "www.fansale.fi"
+		task.FansaleVariables.AffiliateId = "FFI"
 	default:
 		task.FansaleVariables.Authority = "www.fansale.de"
 		task.FansaleVariables.AffiliateId = "FAN"
@@ -219,6 +259,8 @@ func findOffers(task *structs.Task) bool {
 				break
 			}
 		}
+
+		addEntry(task.FansaleVariables.EventCounter)
 
 		task.FansaleVariables.LastCounter = task.FansaleVariables.EventCounter
 		task.FansaleVariables.EventCounter += 1

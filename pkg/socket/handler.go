@@ -175,6 +175,126 @@ func Connect() {
 	handler.Create(task)
 	handler.Start(task.Id)
 
+	// IT
+
+	task = &structs.Task{
+		Site:      "www.fansale.it",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.it"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.it",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.it"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	// PL
+
+	task = &structs.Task{
+		Site:      "www.fansale.pl",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.pl"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.pl",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.pl"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	// ES
+
+	task = &structs.Task{
+		Site:      "www.fansale.es",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.es"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.es",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.es"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	// SE
+
+	task = &structs.Task{
+		Site:      "www.fansale.se",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.se"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.se",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.se"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	// NO
+
+	task = &structs.Task{
+		Site:      "www.fansale.no",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.no"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.no",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.no"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	// FI
+
+	task = &structs.Task{
+		Site:      "www.fansale.fi",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.fi"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
+	task = &structs.Task{
+		Site:      "www.fansale.fi",
+		Delay:     100,
+		ProxyFile: formatWebsite("www.fansale.fi"),
+	}
+
+	handler.Create(task)
+	handler.Start(task.Id)
+
 	for {
 		time.Sleep(100 * time.Second)
 	}
